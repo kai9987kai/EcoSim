@@ -4,4 +4,7 @@ EcoSim is a Python-based simulation of an ecosystem with plants and animals, sho
 ![EcoSim Plot](ecosim_plot.png.png "Final positions of animals and plants in the simulation")
 
 
+# EcoSim 3d beta 
 
+
+![EcoSim Plot](ecosim_plot.png.png "Final positions of animals and plants in the simulation")

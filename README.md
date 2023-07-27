@@ -23,4 +23,4 @@ The script runs in a loop where each iteration represents a timestep. At each ti
 
 Finally, the script visualizes the final positions of the birds and plants in the 3D environment using matplotlib's 3D plotting capabilities. The birds are represented as red dots and the plants as green dots.
 
-![EcoSim Plot](ecosim_plot.png.png "Final positions of animals and plants in the simulation")
+![EcoSim Plot](23.png "Final positions of animals and plants in the simulation")

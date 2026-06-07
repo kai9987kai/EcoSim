@@ -17,7 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--steps", type=int, default=500, help="Simulation steps.")
     parser.add_argument("--seed", type=int, default=7, help="Random seed.")
     parser.add_argument("--herbivores", type=int, default=90, help="Initial herbivores.")
-    parser.add_argument("--predators", type=int, default=18, help="Initial predators.")
+    parser.add_argument("--predators", type=int, default=14, help="Initial predators.")
     parser.add_argument(
         "--output-dir",
         type=Path,

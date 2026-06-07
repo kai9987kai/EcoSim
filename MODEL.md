@@ -60,7 +60,8 @@ distances to the relevant species. Perception controls the distance decay.
 
 **Interaction.** Herbivores compete by depleting shared patches. Predators kill
 nearby herbivores probabilistically. Non-predation deaths return some biomass to
-the local patch.
+the local patch. Local conspecific crowding suppresses reproduction, representing
+unmodeled density-dependent competition, territoriality, and disease pressure.
 
 **Stochasticity.** Initialization, movement exploration, update order, capture,
 mortality, reproduction, and mutation use one seeded NumPy generator.

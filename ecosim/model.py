@@ -30,7 +30,7 @@ class SimulationConfig:
     world_size: float = 100.0
     grid_size: int = 64
     initial_herbivores: int = 90
-    initial_predators: int = 18
+    initial_predators: int = 14
     seed: int = 7
     resource_capacity: float = 32.0
     resource_growth_rate: float = 0.075
@@ -39,14 +39,14 @@ class SimulationConfig:
     half_saturation: float = 9.0
     movement_cost: float = 0.075
     capture_radius: float = 2.4
-    capture_probability: float = 0.64
+    capture_probability: float = 0.62
     background_mortality: float = 0.0006
-    herbivore_reproduction_rate: float = 0.016
-    predator_reproduction_rate: float = 0.0065
-    herbivore_reproduction_energy: float = 100.0
-    predator_reproduction_energy: float = 128.0
-    herbivore_reproduction_cost: float = 52.0
-    predator_reproduction_cost: float = 62.0
+    herbivore_reproduction_rate: float = 0.026
+    predator_reproduction_rate: float = 0.008
+    herbivore_reproduction_energy: float = 88.0
+    predator_reproduction_energy: float = 125.0
+    herbivore_reproduction_cost: float = 45.0
+    predator_reproduction_cost: float = 60.0
     herbivore_birth_energy: float = 26.0
     predator_birth_energy: float = 36.0
     herbivore_max_energy: float = 155.0
@@ -84,7 +84,7 @@ class Traits:
     @staticmethod
     def founder(species: Species, rng: np.random.Generator) -> "Traits":
         if species == "herbivore":
-            means = np.array([1.75, 15.0, 0.85, 4.0, 0.63, 0.48])
+            means = np.array([1.75, 15.0, 0.78, 4.8, 0.67, 0.48])
         else:
             means = np.array([2.05, 19.0, 1.02, 0.0, 0.78, 0.58])
         variation = rng.lognormal(mean=0.0, sigma=0.07, size=6)
@@ -420,9 +420,12 @@ class EcoSimulation:
 
     def _reproduce(self) -> None:
         offspring: list[Agent] = []
+        populations = {
+            "herbivore": self.herbivores,
+            "predator": self.predators,
+        }
         population_counts = {
-            "herbivore": len(self.herbivores),
-            "predator": len(self.predators),
+            species: len(population) for species, population in populations.items()
         }
         for agent in list(self.agents):
             if not agent.alive or agent.age < 18:
@@ -442,8 +445,19 @@ class EcoSimulation:
 
             if population_counts[agent.species] >= population_limit:
                 continue
+            neighbours = self._distances_to(agent.position, populations[agent.species])
+            local_crowding = int(
+                np.count_nonzero(
+                    (neighbours > 0.0)
+                    & (neighbours < 0.6 * agent.traits.perception)
+                )
+            )
+            crowding_factor = 1.0 / (1.0 + 0.12 * local_crowding)
             energy_factor = np.clip(agent.energy / threshold - 0.75, 0.0, 1.5)
-            if agent.energy >= threshold and self.rng.random() < rate * energy_factor:
+            if (
+                agent.energy >= threshold
+                and self.rng.random() < rate * energy_factor * crowding_factor
+            ):
                 jitter = self.rng.normal(0.0, 0.8, 2)
                 child = self._make_agent(
                     species=agent.species,
@@ -457,6 +471,7 @@ class EcoSimulation:
                 )
                 agent.energy -= cost
                 offspring.append(child)
+                populations[agent.species].append(child)
                 population_counts[agent.species] += 1
                 self.last_events[f"{agent.species}_births"] += 1
         self.agents.extend(offspring)

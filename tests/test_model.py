@@ -34,6 +34,23 @@ def test_resources_and_positions_remain_within_bounds():
         assert np.isfinite(agent.energy)
 
 
+def test_reference_scenario_persists_without_reaching_safety_caps():
+    simulation = EcoSimulation(
+        small_config(
+            grid_size=32,
+            initial_herbivores=45,
+            initial_predators=7,
+            seed=7,
+            max_herbivores=150,
+            max_predators=50,
+        )
+    )
+    simulation.run(150)
+
+    assert 0 < len(simulation.herbivores) < simulation.config.max_herbivores
+    assert 0 < len(simulation.predators) < simulation.config.max_predators
+
+
 def test_empty_populations_are_supported():
     simulation = EcoSimulation(
         small_config(initial_herbivores=0, initial_predators=0)

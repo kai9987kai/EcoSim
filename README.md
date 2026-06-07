@@ -1,29 +1,78 @@
 # EcoSim
-EcoSim is a Python-based simulation of an ecosystem with plants and animals, showcasing interactions such as hunting and communication. Animals use machine learning (SGDRegressor) to optimize their movements and interactions in response to the environment and communicate the locations of resources and threats
 
-![EcoSim Plot](ecosim_plot.png.png "Final positions of animals and plants in the simulation")
+EcoSim is a reproducible, spatially explicit individual-based ecosystem model.
+Herbivores forage across a heterogeneous renewable landscape, avoid predators,
+maintain energy reserves, reproduce, and pass mutated traits to offspring.
+Predators search for prey under the same energetic constraints. Death also
+returns a fraction of biomass to the landscape.
 
-# EcoSim
+The supported model replaces the old `SGDRegressor` experiment. That code
+trained a scalar environmental reward as though it were a movement action and
+therefore did not implement reinforcement learning or a valid learned policy.
 
-This beta adds bot reproduction...
+## Run
 
-# EcoSim 3d beta 
+```powershell
+python -m pip install -e ".[dev]"
+python main.py --steps 500 --seed 7
+python -m pytest
+```
 
+Each run writes:
 
-This script models an environment where "birds" and plants exist.
+- `results/timeseries.csv`: populations, energy, resources, births, deaths, kills,
+  and evolving mean speed.
+- `results/ecosim.png`: the final landscape plus population and energy time series.
 
-The environment is a 3D grid of a certain size, each point in the grid has a value, and this grid represents different "resources" in the environment. In this environment, there are plants placed randomly which are considered as resources for birds.
+Useful options:
 
-The birds in this environment are modeled as agents with a 3D position, a certain amount of energy, and a predictive model that dictates their behavior. The predictive model is a Stochastic Gradient Descent (SGD) Regressor, which is a type of machine learning model. This model is used to predict the next action the bird will take based on its current state.
+```powershell
+python main.py --steps 1000 --seed 42 --herbivores 120 --predators 20
+python main.py --steps 200 --no-plot --output-dir experiment-01
+```
 
-The state of a bird is represented by its position in the 3D grid, its current energy level, and the environment map value at its position. The bird uses this state information to predict the next action it will take.
+Runs with the same configuration and seed are deterministic. `Beta.py` and
+`3dbeta.py` remain only as compatibility launchers. `CanvasBeta.html` is an
+older, independent browser prototype and does not share the Python model.
 
-An action is represented by a movement in the 3D grid. After predicting an action, the bird moves in the environment. The new position is calculated based on the bird's current position, the predicted action, and the wind in the environment.
+## Model advances
 
-Birds can also "eat" plants if they are nearby, which increases their energy. They can also communicate with each other to alert about threats or valuable resources. If a bird's energy level reaches a certain threshold, it can reproduce, creating a new bird. The offspring will have similar (but slightly mutated) behavior as the parent.
+- Dynamic energy budget: intake is stored, while maintenance and locomotion
+  consume reserves before reproduction.
+- Holling type-II herbivore intake prevents unlimited feeding at dense patches.
+- State-dependent movement balances resource gain, predation risk, travel cost,
+  perception, and exploration.
+- Spatial heterogeneity and seasonal logistic resource renewal create shifting
+  opportunities rather than static random points.
+- Eco-evolutionary dynamics inherit speed, perception, metabolism, intake,
+  assimilation, and boldness with bounded mutation.
+- Toroidal geometry avoids artificial edge crowding.
+- Randomized feeding and hunting order reduces fixed update-order advantage.
+- Seeded experiments, CSV outputs, tests, and an ODD-style specification improve
+  transparency and repeatability.
 
-The script runs in a loop where each iteration represents a timestep. At each timestep, all birds move, eat if they can, communicate, and potentially reproduce.
+This is a hypothesis-generating simulation, not a calibrated forecast. Parameter
+values are dimensionless and should be fitted to empirical data before making
+claims about a real ecosystem.
 
-Finally, the script visualizes the final positions of the birds and plants in the 3D environment using matplotlib's 3D plotting capabilities. The birds are represented as red dots and the plants as green dots.
+## Research basis
 
-![EcoSim Plot](23.png "Final positions of animals and plants in the simulation")
+The implementation is a simplified synthesis, not a reproduction of any one
+paper:
+
+- Bradley et al. (2025), [dynamic energy budgets inside a spatial
+  agent-based model](https://doi.org/10.3389/fevo.2025.1505145): motivates
+  reserves, maintenance-first allocation, resource feedback, and heterogeneous
+  individual state.
+- Szangolies et al. (2024), [individual energetics, movement, and community
+  coexistence](https://doi.org/10.1111/1365-2656.14134): motivates explicit
+  energy balance and spatial movement.
+- Liu et al. (2024), [MetaIBM](https://doi.org/10.1016/j.ecolmodel.2024.110730):
+  motivates inherited individual variation in spatial eco-evolutionary models.
+- Grimm et al. (2025), [ODD-assisted model
+  replication](https://doi.org/10.1016/j.ecolmodel.2024.110967): motivates the
+  structured specification in [MODEL.md](MODEL.md).
+
+The model deliberately avoids deep reinforcement learning: without behavioral
+observations, a validated reward, and out-of-sample evaluation, adding a neural
+policy would increase opacity without increasing ecological credibility.
